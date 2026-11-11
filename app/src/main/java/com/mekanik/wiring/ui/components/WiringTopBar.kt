@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -57,6 +58,7 @@ fun WiringTopBar(
     onOpenDiagnostic: () -> Unit,
     onSaveDiagram: () -> Unit,
     onOpenExport: () -> Unit,
+    onCheckUpdate: () -> Unit,
     onDeleteSelectedWire: () -> Unit
 ) {
     var brandMenuExpanded by remember { mutableStateOf(false) }
@@ -162,6 +164,14 @@ fun WiringTopBar(
                     Icon(
                         imageVector = Icons.Default.Share,
                         contentDescription = "Ekspor / Impor",
+                        tint = TextSecondary
+                    )
+                }
+
+                IconButton(onClick = onCheckUpdate) {
+                    Icon(
+                        imageVector = Icons.Default.SystemUpdate,
+                        contentDescription = "Periksa Pembaruan",
                         tint = TextSecondary
                     )
                 }

@@ -14,18 +14,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mekanik.wiring.data.updater.UpdateState
 import com.mekanik.wiring.ui.canvas.SchematicCanvas
 import com.mekanik.wiring.ui.components.ActiveSheet
 import com.mekanik.wiring.ui.components.ComponentPaletteSheet
 import com.mekanik.wiring.ui.components.DiagnosticSheet
 import com.mekanik.wiring.ui.components.ExportImportDialog
 import com.mekanik.wiring.ui.components.PresetSelectorSheet
+import com.mekanik.wiring.ui.components.UpdateDialog
 import com.mekanik.wiring.ui.components.WiringTopBar
 import com.mekanik.wiring.ui.theme.NeutralSurfaceVariant
 import com.mekanik.wiring.ui.theme.OledBlack
@@ -38,7 +42,19 @@ fun WiringScreen(
     viewModel: WiringViewModel
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val updateState by viewModel.updateState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showUpdateDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(updateState) {
+        if (updateState is UpdateState.Available ||
+            updateState is UpdateState.Downloading ||
+            updateState is UpdateState.ReadyToInstall ||
+            updateState is UpdateState.Error
+        ) {
+            showUpdateDialog = true
+        }
+    }
 
     LaunchedEffect(state.snackbarMessage) {
         val msg = state.snackbarMessage
@@ -65,6 +81,7 @@ fun WiringScreen(
                 onOpenDiagnostic = { viewModel.openSheet(VmActiveSheet.DIAGNOSTIC_REPORT) },
                 onSaveDiagram = { viewModel.saveCurrentDiagram() },
                 onOpenExport = { viewModel.openSheet(VmActiveSheet.EXPORT_IMPORT) },
+                onCheckUpdate = { viewModel.checkForUpdate() },
                 onDeleteSelectedWire = { viewModel.deleteSelectedWire() }
             )
         },
@@ -135,5 +152,14 @@ fun WiringScreen(
             )
         }
         VmActiveSheet.NONE -> {}
+    }
+
+    if (showUpdateDialog && updateState !is UpdateState.Idle) {
+        UpdateDialog(
+            updateState = updateState,
+            onDismiss = { showUpdateDialog = false },
+            onDownload = { url, bytes -> viewModel.downloadUpdate(url, bytes) },
+            onInstall = { file -> viewModel.installUpdate(file) }
+        )
     }
 }

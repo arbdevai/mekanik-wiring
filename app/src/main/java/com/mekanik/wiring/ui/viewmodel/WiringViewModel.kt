@@ -3,6 +3,8 @@ package com.mekanik.wiring.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mekanik.wiring.data.repository.WiringRepository
+import com.mekanik.wiring.data.updater.UpdateManager
+import com.mekanik.wiring.data.updater.UpdateState
 import com.mekanik.wiring.domain.model.ComponentPin
 import com.mekanik.wiring.domain.model.ComponentType
 import com.mekanik.wiring.domain.model.Manufacturer
@@ -21,8 +23,12 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class WiringViewModel(
-    private val repository: WiringRepository
+    private val repository: WiringRepository,
+    private val updateManager: UpdateManager? = null
 ) : ViewModel() {
+
+    val updateState: StateFlow<UpdateState> = updateManager?.updateState
+        ?: MutableStateFlow(UpdateState.Idle).asStateFlow()
 
     private val initialDiagram = PresetWiringFactory.createShogunKeboDCIgnition()
 
@@ -45,6 +51,26 @@ class WiringViewModel(
                 _uiState.update { it.copy(savedDiagrams = saved) }
             }
         }
+    }
+
+    fun checkForUpdate() {
+        viewModelScope.launch {
+            updateManager?.checkForUpdate()
+        }
+    }
+
+    fun downloadUpdate(downloadUrl: String, expectedBytes: Long) {
+        viewModelScope.launch {
+            updateManager?.downloadAndVerify(downloadUrl, expectedBytes)
+        }
+    }
+
+    fun installUpdate(apkFile: java.io.File) {
+        updateManager?.triggerInstall(apkFile)
+    }
+
+    fun dismissUpdate() {
+        // Handled via state or reset if needed
     }
 
     fun openSheet(sheet: ActiveSheet) {
