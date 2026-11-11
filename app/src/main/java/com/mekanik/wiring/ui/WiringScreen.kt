@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mekanik.wiring.data.updater.UpdateState
 import com.mekanik.wiring.ui.canvas.SchematicCanvas
-import com.mekanik.wiring.ui.components.ActiveSheet
 import com.mekanik.wiring.ui.components.ComponentPaletteSheet
 import com.mekanik.wiring.ui.components.DiagnosticSheet
 import com.mekanik.wiring.ui.components.ExportImportDialog
